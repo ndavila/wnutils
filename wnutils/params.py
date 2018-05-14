@@ -32,9 +32,9 @@ def apply_class_methods(my_cls, keyword_params):
                     method = getattr(my_cls, key)
                 except AttributeError:
                     raise NotImplementedError(
-                       "Class `{}` does not implement `{}`".format(
+                        "Class `{}` does not implement `{}`".format(
                             my_cls.__class__.__name__, method_name
-                       )
+                        )
                     )
 
                 for key2 in keyword_params[key]:
@@ -43,5 +43,3 @@ def apply_class_methods(my_cls, keyword_params):
 
 def list_rcParams():
     print(mpl.rcParams.keys())
-
-

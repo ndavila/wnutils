@@ -313,8 +313,8 @@ def get_abundances_vs_nucleon_number_in_zones(
 
     """
 
-    if( nucleon != 'z' and nucleon != 'n' and nucleon != 'a' ):
-        print( "nucleon must be 'z', 'n', or 'a'." )
+    if(nucleon != 'z' and nucleon != 'n' and nucleon != 'a'):
+        print("nucleon must be 'z', 'n', or 'a'.")
         return
 
     zones = _get_zones(_get_root(file), zone_xpath)

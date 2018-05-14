@@ -1,0 +1,419 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>wnutils.plot.xml &#8212; wnutils 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head><body>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for wnutils.plot.xml</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span> <span class="k">as</span> <span class="nn">mpl</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">import</span> <span class="nn">wnutils.read.xml</span> <span class="k">as</span> <span class="nn">wx</span>
+<span class="kn">import</span> <span class="nn">wnutils.params</span> <span class="k">as</span> <span class="nn">plp</span>
+<span class="kn">import</span> <span class="nn">wnutils.utils</span> <span class="k">as</span> <span class="nn">wu</span>
+
+
+<div class="viewcode-block" id="plot_mass_fraction_vs_property_in_files"><a class="viewcode-back" href="../../../wnutils.plot.html#wnutils.plot.xml.plot_mass_fraction_vs_property_in_files">[docs]</a><span class="k">def</span> <span class="nf">plot_mass_fraction_vs_property_in_files</span><span class="p">(</span>
+    <span class="n">files</span><span class="p">,</span> <span class="n">prop</span><span class="p">,</span> <span class="n">species</span><span class="p">,</span> <span class="n">legend_labels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to plot the mass fraction of a species in multiple files</span>
+<span class="sd">       versus a property.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        files (:obj:`list`): A list of strings giving the files.</span>
+
+<span class="sd">        prop (:obj:`str`): A string giving the property.</span>
+
+<span class="sd">        species (:obj:`str`):  A string giving the species.</span>
+
+<span class="sd">        legend_labels (:obj:`list`, optional): A list of strings giving the</span>
+<span class="sd">        legend labels.  Defaults to None.</span>
+
+<span class="sd">        kwargs:  Acceptable matplotlib arguments.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A matplotlib plot.</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">       Example:</span>
+
+<span class="sd">           import wnutils.plot.xml as wp</span>
+<span class="sd">           files = [&#39;file1.xml&#39;, &#39;file2.xml&#39;, &#39;file3.xml&#39;]</span>
+<span class="sd">           wp.plot_mass_fraction_vs_property_in_files(</span>
+<span class="sd">               files,</span>
+<span class="sd">               &#39;time&#39;,</span>
+<span class="sd">               &#39;o16&#39;,</span>
+<span class="sd">               legend_labels = [&#39;file1&#39;, &#39;file2&#39;, &#39;file3&#39;],</span>
+<span class="sd">               xlabel = &#39;time (s)&#39;,</span>
+<span class="sd">               ylim = [1.e-4,1]</span>
+<span class="sd">           )</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">plp</span><span class="o">.</span><span class="n">set_plot_params</span><span class="p">(</span><span class="n">plt</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">legend_labels</span><span class="p">:</span>
+        <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">legend_labels</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Invalid legend labels for input files.&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">get_properties_in_zones_as_floats</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="p">[</span><span class="n">prop</span><span class="p">]))[</span><span class="n">prop</span><span class="p">]</span>
+        <span class="k">if</span><span class="p">(</span><span class="s1">&#39;xfactor&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">/=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;xfactor&#39;</span><span class="p">])</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">get_mass_fractions_in_zones</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="p">[</span><span class="n">species</span><span class="p">])[</span><span class="n">species</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">legend_labels</span><span class="p">:</span>
+            <span class="n">ll</span><span class="p">,</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">legend_labels</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ll</span><span class="p">,</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+    <span class="n">plp</span><span class="o">.</span><span class="n">apply_class_methods</span><span class="p">(</span><span class="n">plt</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="s1">&#39;use_latex_names&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;use_latex_names&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;yes&#39;</span><span class="p">):</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span>
+                <span class="s1">&#39;X(&#39;</span> <span class="o">+</span> <span class="n">wu</span><span class="o">.</span><span class="n">get_latex_names</span><span class="p">([</span><span class="n">species</span><span class="p">])[</span><span class="n">species</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span>
+            <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">legend_labels</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="plot_mass_fractions"><a class="viewcode-back" href="../../../wnutils.plot.html#wnutils.plot.xml.plot_mass_fractions">[docs]</a><span class="k">def</span> <span class="nf">plot_mass_fractions</span><span class="p">(</span>
+    <span class="n">file</span><span class="p">,</span> <span class="n">species</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to the mass fraction of a species in a specific file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        file (:obj:`str`): The xml file to be read.</span>
+
+<span class="sd">        species (:obj:`lis`): List of strings giving requested species.</span>
+
+<span class="sd">        kwargs:  Accpetable matplotlib arguments.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A matplotlib plot.</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">       Example:</span>
+
+<span class="sd">           import wnutils.plot.xml as wp</span>
+<span class="sd">           wp.plot_mass_fractions(</span>
+<span class="sd">               file.xml,</span>
+<span class="sd">               [&#39;n&#39;,&#39;he4&#39;,&#39;c12&#39;]</span>
+<span class="sd">               xlabel = &#39;step&#39;</span>
+<span class="sd">           )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">plp</span><span class="o">.</span><span class="n">set_plot_params</span><span class="p">(</span><span class="n">mpl</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+
+    <span class="n">y</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">latex_names</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">y</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">get_mass_fractions_in_zones</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">species</span><span class="p">)</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="s1">&#39;use_latex_names&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;use_latex_names&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;yes&#39;</span><span class="p">):</span>
+            <span class="n">latex_names</span> <span class="o">=</span> <span class="n">wu</span><span class="o">.</span><span class="n">get_latex_names</span><span class="p">(</span><span class="n">species</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">species</span><span class="p">)):</span>
+        <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">latex_names</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">lab</span> <span class="o">=</span> <span class="n">latex_names</span><span class="p">[</span><span class="n">species</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lab</span> <span class="o">=</span> <span class="n">species</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">l</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">species</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">label</span><span class="o">=</span><span class="n">lab</span><span class="p">))</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="s1">&#39;ylabel&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">species</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Mass Fraction&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">latex_names</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;X(&#39;</span> <span class="o">+</span> <span class="n">species</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;X(&#39;</span> <span class="o">+</span> <span class="n">latex_names</span><span class="p">[</span><span class="n">species</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="s1">&#39;xlabel&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;step&#39;</span><span class="p">)</span>
+
+    <span class="n">plp</span><span class="o">.</span><span class="n">apply_class_methods</span><span class="p">(</span><span class="n">plt</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="plot_mass_fractions_vs_property"><a class="viewcode-back" href="../../../wnutils.plot.html#wnutils.plot.xml.plot_mass_fractions_vs_property">[docs]</a><span class="k">def</span> <span class="nf">plot_mass_fractions_vs_property</span><span class="p">(</span>
+    <span class="n">file</span><span class="p">,</span> <span class="n">prop</span><span class="p">,</span> <span class="n">species</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to plot mass fractions of a species in a file</span>
+<span class="sd">       versus a property.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        file (:obj:`str`): The xml file to be read.</span>
+
+<span class="sd">        prop (:obj:`str`): A string giving the property.</span>
+
+<span class="sd">        species (:obj:`list`): List of strings giving requested species.</span>
+
+<span class="sd">        kwargs:  Acceptable matplotlib arguments.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A matplotlib plot.</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">       Example:</span>
+
+<span class="sd">           import wnutils.plot.xml as wp</span>
+<span class="sd">           wp.plot_mass_fractions_vs_property(</span>
+<span class="sd">               file.xml,</span>
+<span class="sd">               &#39;time&#39;,</span>
+<span class="sd">               [&#39;c12&#39;,&#39;c13&#39;]</span>
+<span class="sd">               xlabel = &#39;time (s)&#39;,</span>
+<span class="sd">           )</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">plp</span><span class="o">.</span><span class="n">set_plot_params</span><span class="p">(</span><span class="n">mpl</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+
+    <span class="n">y</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">latex_names</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">get_properties_in_zones_as_floats</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="p">[</span><span class="n">prop</span><span class="p">]))[</span><span class="n">prop</span><span class="p">]</span>
+    <span class="k">if</span><span class="p">(</span><span class="s1">&#39;xfactor&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">/=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;xfactor&#39;</span><span class="p">])</span>
+
+    <span class="n">y</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">get_mass_fractions_in_zones</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">species</span><span class="p">)</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="s1">&#39;use_latex_names&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;use_latex_names&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;yes&#39;</span><span class="p">):</span>
+            <span class="n">latex_names</span> <span class="o">=</span> <span class="n">wu</span><span class="o">.</span><span class="n">get_latex_names</span><span class="p">(</span><span class="n">species</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">species</span><span class="p">)):</span>
+        <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">latex_names</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">lab</span> <span class="o">=</span> <span class="n">latex_names</span><span class="p">[</span><span class="n">species</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lab</span> <span class="o">=</span> <span class="n">species</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">l</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="n">species</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">label</span><span class="o">=</span><span class="n">lab</span><span class="p">))</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="s1">&#39;ylabel&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">species</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Mass Fraction&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">latex_names</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;X(&#39;</span> <span class="o">+</span> <span class="n">species</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;X(&#39;</span> <span class="o">+</span> <span class="n">latex_names</span><span class="p">[</span><span class="n">species</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">species</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="s1">&#39;xlabel&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span>
+
+    <span class="n">plp</span><span class="o">.</span><span class="n">apply_class_methods</span><span class="p">(</span><span class="n">plt</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="plot_property"><a class="viewcode-back" href="../../../wnutils.plot.html#wnutils.plot.xml.plot_property">[docs]</a><span class="k">def</span> <span class="nf">plot_property</span><span class="p">(</span>
+    <span class="n">file</span><span class="p">,</span> <span class="n">prop</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to plot a particular property in a file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        file (:obj:`str`): The xml file to be read.</span>
+
+<span class="sd">        prop (:obj:`str`): A string giving the property.</span>
+
+<span class="sd">        kwargs: Acceptable matplotlib arguments.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A matplotlib plot.</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">       Example:</span>
+
+<span class="sd">           import wnutils.plot.xml as wp</span>
+<span class="sd">           wp.plot_property(</span>
+<span class="sd">               file.xml,</span>
+<span class="sd">               &#39;mass below&#39;</span>
+<span class="sd">               xlabel = &#39;mass below $M_\odot$&#39;</span>
+<span class="sd">           )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">plp</span><span class="o">.</span><span class="n">set_plot_params</span><span class="p">(</span><span class="n">mpl</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">get_properties_in_zones_as_floats</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="p">[</span><span class="n">prop</span><span class="p">]))[</span><span class="n">prop</span><span class="p">]</span>
+    <span class="k">if</span><span class="p">(</span><span class="s1">&#39;xfactor&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">/=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;xfactor&#39;</span><span class="p">])</span>
+
+    <span class="n">plp</span><span class="o">.</span><span class="n">apply_class_methods</span><span class="p">(</span><span class="n">plt</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="plot_property_vs_property"><a class="viewcode-back" href="../../../wnutils.plot.html#wnutils.plot.xml.plot_property_vs_property">[docs]</a><span class="k">def</span> <span class="nf">plot_property_vs_property</span><span class="p">(</span>
+    <span class="n">file</span><span class="p">,</span> <span class="n">prop1</span><span class="p">,</span> <span class="n">prop2</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to plot one property vs second property in a file.</span>
+
+<span class="sd">    Arg:</span>
+<span class="sd">       file (:obj:`str`): The xml file to be read.</span>
+
+<span class="sd">       prop1 (:obj:`str`): A string giving a property.</span>
+
+<span class="sd">       prop2 (:obj:`str`): A string giving a property.</span>
+
+<span class="sd">       kwargs: Accpetable matplotlib arguments.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A matplotlib plot.</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">       Example:</span>
+
+<span class="sd">           import wnutils.plot.xml as wp</span>
+<span class="sd">           wp.plot_property_vs_property(</span>
+<span class="sd">               file.xml,</span>
+<span class="sd">               &#39;mass&#39;,</span>
+<span class="sd">               &#39;time&#39;,</span>
+<span class="sd">               ylabel = &#39;Mass $M_\odot$&#39;,</span>
+<span class="sd">               xlabel = &#39;time (s)&#39;</span>
+<span class="sd">           )</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">plp</span><span class="o">.</span><span class="n">set_plot_params</span><span class="p">(</span><span class="n">mpl</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">get_properties_in_zones_as_floats</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="p">[</span><span class="n">prop1</span><span class="p">,</span> <span class="n">prop2</span><span class="p">])</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">prop1</span><span class="p">]</span>
+    <span class="k">if</span><span class="p">(</span><span class="s1">&#39;xfactor&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">/=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;xfactor&#39;</span><span class="p">])</span>
+
+    <span class="n">y</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">prop2</span><span class="p">]</span>
+    <span class="k">if</span><span class="p">(</span><span class="s1">&#39;yfactor&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">y</span> <span class="o">/=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;yfactor&#39;</span><span class="p">])</span>
+
+    <span class="n">plp</span><span class="o">.</span><span class="n">apply_class_methods</span><span class="p">(</span><span class="n">plt</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="plot_zone_abundances_vs_nucleon_number"><a class="viewcode-back" href="../../../wnutils.plot.html#wnutils.plot.xml.plot_zone_abundances_vs_nucleon_number">[docs]</a><span class="k">def</span> <span class="nf">plot_zone_abundances_vs_nucleon_number</span><span class="p">(</span>
+    <span class="n">file</span><span class="p">,</span> <span class="n">nucleon</span><span class="p">,</span> <span class="n">zone_xpath</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to plot the abundances summed oer nucleon number in zones.</span>
+
+<span class="sd">    Arg:</span>
+<span class="sd">       file (:obj:`str`): The xml file to be read.</span>
+
+<span class="sd">       nucleon (:obj:`str`): String giving the nucleon number to sum</span>
+<span class="sd">       over.</span>
+
+<span class="sd">       zone_xpath (:obj:`str`, optional): XPath expression in select zones.</span>
+<span class="sd">       Default to all zones.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A matplotlib plot.</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">       Example:</span>
+
+<span class="sd">           import wnutils.plot.xml as wp</span>
+<span class="sd">           wp.plot_zone_abundances_vs_nucleon_number(</span>
+<span class="sd">               file.xml,</span>
+<span class="sd">               nucleon = &#39;z&#39;</span>
+<span class="sd">           )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">get_abundances_vs_nucleon_number_in_zones</span><span class="p">(</span>
+            <span class="n">file</span><span class="p">,</span> <span class="n">nucleon</span><span class="p">,</span> <span class="n">zone_xpath</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="n">plp</span><span class="o">.</span><span class="n">apply_class_methods</span><span class="p">(</span><span class="n">plt</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Clemson University.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
